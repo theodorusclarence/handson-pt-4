@@ -16,22 +16,11 @@ function main() {
    */
 
   //* Didefinisikan titik"nya aja
+  // prettier-ignore
   var vertices = [
-    -0.5,
-    -0.5,
-    1.0,
-    0,
-    0, // A
-    0,
-    0.5,
-    0,
-    1,
-    0, //B
-    0.5,
-    -0.5,
-    0,
-    1,
-    1, //C
+    -0.5, -0.5, +1.0, +0.0, +0.0, // A
+    +0.0, +0.5, +0.0, +1.0, +0.0, // B
+    +0.5, -0.5, +0.0, +1.0, +1.0, // C
   ];
 
   // Bikin buffer, terus ngeassign vertices ke buffer
@@ -39,7 +28,7 @@ function main() {
   const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  // gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
   const vertexShaderCode = `
   attribute vec2 a_position;
@@ -112,16 +101,51 @@ function main() {
 
   // gl.viewport(100, 0, canvas.width, canvas.height);
 
-  // Clear existing canvas first
-  gl.clearColor(0.13, 0.13, 0.13, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  let dx = 0;
+  let dy = 0;
+  let dz = 0;
+  const udx = gl.getUniformLocation(shaderProgram, 'dx');
+  const udy = gl.getUniformLocation(shaderProgram, 'dy');
+  const udz = gl.getUniformLocation(shaderProgram, 'dz');
 
-  const dx = 0;
-  const dy = 0;
-  const dz = 0;
+  let freeze = false;
+  function onMouseClick(e) {
+    freeze = !freeze;
+  }
+  document.addEventListener('click', onMouseClick, false);
 
-  // * Karena pake loop, jadi cuma butuh titiknya aja
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  function onKeyDown(e) {
+    if (e.keyCode === 32) {
+      freeze = true;
+    }
+  }
+  function onKeyUp(e) {
+    if (e.keyCode === 32) {
+      freeze = false;
+    }
+  }
+  document.addEventListener('keydown', onKeyDown, false);
+  document.addEventListener('keyup', onKeyUp, false);
+
+  function render() {
+    if (!freeze) {
+      dx += 0.001;
+      dy += 0.001;
+      dz += 0.001;
+    }
+    gl.uniform1f(udx, dx);
+    gl.uniform1f(udy, dy);
+    gl.uniform1f(udz, dz);
+
+    // Clear existing canvas first
+    gl.clearColor(0.13, 0.13, 0.13, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
 }
 
 main();
